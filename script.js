@@ -278,8 +278,16 @@ function initPlayer(id, handle, options) {
 				} else if (media.hlsPlayer) {
 					media.videoTracks = media.hlsPlayer.videoTracks;
 				} else if (media.twitchPlayer) {
-					/* Auto-click Twitch mature content warning button. */
-					let button = media.twitchPlayer._iframe.contentWindow.document.querySelector('button[data-a-target="player-overlay-mature-accept"]');
+					/* Auto-click Twitch's content warning / mature-content overlay button.
+					   Twitch replaced the old blanket "Mature Content" toggle with
+					   Content Classification Labels in 2023, which use a different
+					   interstitial. Try the legacy selector first, then fall back to
+					   matching common accept/continue button text so this keeps working
+					   if Twitch changes their markup again. */
+					let doc = media.twitchPlayer._iframe.contentWindow.document;
+					let button = doc.querySelector('button[data-a-target="player-overlay-mature-accept"]')
+						|| doc.querySelector('button[data-a-target="content-classification-gate-overlay-start-watching-button"]')
+						|| Array.from(doc.querySelectorAll('button')).find(b => /start watching|i understand|accept|continue/i.test(b.textContent || ''));
 
 					if (button) {
 						button.click();
