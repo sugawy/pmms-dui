@@ -265,14 +265,22 @@ function initPlayer(id, handle, options) {
 					options.title = media.youTubeApi.getVideoData().title;
 
 					// Auto-click the "Skip Ad" button on skippable YouTube ads.
-					(function clickSkipAdButton() {
-						const button = media.youTubeApi.getIframe().contentWindow.document.querySelector('.ytp-skip-ad-button');
-						if (button) {
-							button.click();
-						} else {
-							setTimeout(clickSkipAdButton, 1000);
+					(function clickSkipAdButton(attemptsLeft) {
+						if (attemptsLeft <= 0) {
+							return;
 						}
-					})();
+						try {
+							const doc = media.youTubeApi.getIframe().contentWindow.document;
+							const button = doc.querySelector('.ytp-skip-ad-button, .ytp-ad-skip-button, .ytp-ad-skip-button-modern, .videoAdUiSkipButton');
+							if (button) {
+								button.click();
+							} else {
+								setTimeout(() => clickSkipAdButton(attemptsLeft - 1), 1000);
+							}
+						} catch (e) {
+							console.warn('pmms: could not access YouTube iframe document to skip ad (likely cross-origin restriction):', e);
+						}
+					})(120);
 
 					media.videoTracks = {length: 1};
 				} else if (media.hlsPlayer) {
