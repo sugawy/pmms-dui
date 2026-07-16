@@ -264,6 +264,16 @@ function initPlayer(id, handle, options) {
 				if (media.youTubeApi) {
 					options.title = media.youTubeApi.getVideoData().title;
 
+					// Auto-click the "Skip Ad" button on skippable YouTube ads.
+					(function clickSkipAdButton() {
+						const button = media.youTubeApi.getIframe().contentWindow.document.querySelector('.ytp-skip-ad-button');
+						if (button) {
+							button.click();
+						} else {
+							setTimeout(clickSkipAdButton, 1000);
+						}
+					})();
+
 					media.videoTracks = {length: 1};
 				} else if (media.hlsPlayer) {
 					media.videoTracks = media.hlsPlayer.videoTracks;
